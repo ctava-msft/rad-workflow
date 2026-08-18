@@ -1,0 +1,7 @@
+azure-cosmos
+azure-identity
+azure-monitor-opentelemetry
+fastapi
+pydantic
+PyJWT[crypto]
+uvicorn

@@ -1,0 +1,17 @@
+.azure/
+.git/
+.github/
+.history/
+.venv/
+.vscode/
+_infra/
+frontend/
+k8s/
+tmp/
+**/.env
+**/__pycache__/
+**/*.pyc
+**/*.db
+**/*.sqlite
+**/node_modules/
+**/dist/

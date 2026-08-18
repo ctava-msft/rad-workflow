@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+      args:
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+    image: rad-workflow-backend:local
+    environment:
+      CASE_STORE: sqlite
+      DEVELOPMENT_MODE: "true"
+      DEVELOPMENT_USER: Local Clinician
+      SQLITE_PATH: /data/radiology.db
+    ports:
+      - "8000:5000"
+    volumes:
+      - radiology-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  frontend:
+    build:
+      context: frontend
+      args:
+        VITE_AZURE_CLIENT_ID: ${ENTRA_CLIENT_ID:?Set ENTRA_CLIENT_ID}
+        VITE_AZURE_AUTHORITY: https://login.microsoftonline.com/${AZURE_TENANT_ID:?Set AZURE_TENANT_ID}
+        VITE_AZURE_REDIRECT_URI: http://localhost:5173
+        VITE_API_SCOPE: api://${ENTRA_CLIENT_ID}/access_as_user
+        VITE_API_URL: ""
+        VITE_AZURE_DOMAIN_HINT: ${AZURE_DOMAIN_HINT:-}
+    image: rad-workflow-frontend:local
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  radiology-data:
