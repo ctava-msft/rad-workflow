@@ -235,7 +235,7 @@ resource apiManagement 'Microsoft.ApiManagement/service@2023-09-01-preview' = {
   }
   properties: {
     publisherEmail: publisherEmail
-    publisherName: 'Radiology Workflow'
+    publisherName: 'SegMed ICH Review'
   }
 }
 
@@ -244,7 +244,7 @@ resource radiologyApi 'Microsoft.ApiManagement/service/apis@2023-09-01-preview' 
   name: 'radiology'
   properties: {
     apiType: 'http'
-    displayName: 'Radiology Collaboration API'
+    displayName: 'SegMed ICH Progression Review API'
     path: 'api'
     protocols: [
       'https'
@@ -256,8 +256,7 @@ resource radiologyApi 'Microsoft.ApiManagement/service/apis@2023-09-01-preview' 
 
 var apiMethods = [
   'GET'
-  'POST'
-  'PATCH'
+  'PUT'
   'OPTIONS'
 ]
 
@@ -289,8 +288,7 @@ var apiPolicyTemplate = '''
       </allowed-origins>
       <allowed-methods preflight-result-max-age="300">
         <method>GET</method>
-        <method>POST</method>
-        <method>PATCH</method>
+        <method>PUT</method>
         <method>OPTIONS</method>
       </allowed-methods>
       <allowed-headers>

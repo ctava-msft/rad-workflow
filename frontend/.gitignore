@@ -23,6 +23,5 @@ dist-ssr
 *.sw?
 org1.png
 node_modules
-package-lock.json
 .env
 .env.production

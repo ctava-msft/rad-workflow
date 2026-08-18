@@ -13,15 +13,20 @@ them to the Microsoft Security Response Center at
 
 - Microsoft Entra ID authenticates clinicians in the SPA and protects every
   `/api/*` operation at both APIM and the FastAPI backend.
+- Review ownership is derived only from immutable Entra `tid` and `oid` claims.
+  Request payloads cannot provide or override a reviewer identity, and each
+  reviewer can read or update only their own scores, notes, and preferences.
 - The frontend is public over TLS; the backend and frontend Kubernetes Services
   remain `ClusterIP` and are reached through the NGINX ingress controller.
+- The case manifest and NIfTI volumes are delivered through authenticated API
+  endpoints rather than the public frontend service.
 - The backend uses Azure Workload Identity for passwordless Cosmos DB access.
 - Cosmos DB key authentication is disabled. The backend identity receives only
   the built-in Cosmos DB Data Contributor role.
 - `DEVELOPMENT_MODE=true` bypasses interactive authentication only for local
   Docker development and is explicitly disabled in AKS.
-- Case records should use a non-identifying patient reference. Do not place
-  diagnostic images or unnecessary protected health information in review notes.
+- The bundled cohort is de-identified research data. Do not place identifying
+  information or unnecessary protected health information in review notes.
 - Container images are built in Azure Container Registry and pulled by AKS with
   managed identity.
 

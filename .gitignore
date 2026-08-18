@@ -12,6 +12,7 @@
 **/node_modules/
 **/dist/
 **/build/
+backend/data/volumes/
 _infra/main.json
 
 *.db

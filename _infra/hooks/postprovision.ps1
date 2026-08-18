@@ -116,10 +116,14 @@ try {
     Remove-Item $temporaryManifest -ErrorAction SilentlyContinue
   }
 
+  Invoke-Checked 'kubectl' @(
+    'rollout', 'restart', 'deployment/backend', 'deployment/frontend',
+    '--namespace', 'radiology'
+  )
   Invoke-Checked 'kubectl' @('rollout', 'status', 'deployment/backend', '--namespace', 'radiology', '--timeout', '10m')
   Invoke-Checked 'kubectl' @('rollout', 'status', 'deployment/frontend', '--namespace', 'radiology', '--timeout', '10m')
 
-  Write-Host "Radiology workflow deployed: $frontendUrl" -ForegroundColor Green
+  Write-Host "SegMed ICH review deployed: $frontendUrl" -ForegroundColor Green
 }
 finally {
   Set-Location $previousLocation

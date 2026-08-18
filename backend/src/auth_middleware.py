@@ -1,4 +1,5 @@
 import os
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
 
@@ -8,6 +9,38 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 
 security = HTTPBearer(auto_error=False)
+
+
+@dataclass(frozen=True)
+class UserIdentity:
+    tenant_id: str
+    object_id: str
+    display_name: str
+
+    @property
+    def key(self) -> str:
+        return f"{self.tenant_id}:{self.object_id}"
+
+
+def identity_from_claims(claims: dict[str, Any]) -> UserIdentity:
+    tenant_id = str(claims.get("tid") or "").strip()
+    object_id = str(claims.get("oid") or "").strip()
+    if not tenant_id or not object_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The access token does not contain a tenant and user object identity.",
+        )
+    display_name = str(
+        claims.get("name")
+        or claims.get("preferred_username")
+        or claims.get("email")
+        or object_id
+    )
+    return UserIdentity(
+        tenant_id=tenant_id,
+        object_id=object_id,
+        display_name=display_name,
+    )
 
 
 class EntraTokenValidator:
@@ -78,6 +111,7 @@ async def get_current_user(
             return {
                 "name": os.getenv("DEVELOPMENT_USER", "Local Clinician"),
                 "oid": "local-development-user",
+                "tid": "local-development-tenant",
             }
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

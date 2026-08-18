@@ -1,14 +1,143 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta name="theme-color" content="#203037" />
-    <title>Rad Review | Case Selection</title>
+    <meta name="theme-color" content="#090d14">
+    <title>SegMed ICH progression review</title>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <main id="auth-gate" class="auth-gate">
+      <div class="auth-content">
+        <p class="eyebrow">SegMed CT</p>
+        <h1>ICH progression candidates</h1>
+        <p class="muted">Sign in with your authorized Microsoft account to review cases.</p>
+        <button id="sign-in" type="button" class="sign-in-button">Sign in with Microsoft</button>
+        <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
+      </div>
+    </main>
+
+    <div id="app-shell" class="app-shell" hidden>
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <p class="eyebrow">SegMed CT</p>
+          <h1>ICH progression candidates</h1>
+          <div class="reviewer-row">
+            <span id="reviewer-name"></span>
+            <button id="sign-out" type="button">Sign out</button>
+          </div>
+          <p id="case-count" class="muted">Loading cases...</p>
+          <label class="search-label" for="case-search">Filter cases</label>
+          <input id="case-search" type="search" placeholder="Patient, report, series...">
+          <label class="search-label" for="case-sort">Sort by</label>
+          <select id="case-sort">
+            <option value="case">Case number</option>
+            <option value="score-desc">Score (high to low)</option>
+            <option value="score-asc">Score (low to high)</option>
+            <option value="unscored-first">Unscored first</option>
+          </select>
+        </div>
+        <nav id="case-list" class="case-list" aria-label="Candidate cases"></nav>
+      </aside>
+
+      <main class="workspace">
+        <header class="toolbar">
+          <div>
+            <p class="eyebrow">Selected case</p>
+            <h2 id="case-title">Loading...</h2>
+            <p id="case-subtitle" class="muted"></p>
+          </div>
+          <div class="toolbar-controls">
+            <button id="previous-case" type="button">Previous</button>
+            <button id="next-case" type="button">Next</button>
+            <label>
+              View
+              <select id="slice-type">
+                <option value="axial">Axial</option>
+                <option value="coronal">Coronal</option>
+                <option value="sagittal">Sagittal</option>
+                <option value="multiplanar">Multiplanar</option>
+              </select>
+            </label>
+            <div class="window-controls" role="group" aria-label="CT window">
+              <button type="button" data-window="brain" class="active">Brain</button>
+              <button type="button" data-window="subdural">Subdural</button>
+              <button type="button" data-window="bone">Bone</button>
+            </div>
+            <button id="reset-view" type="button" title="Reset zoom and pan in both panels">Reset view</button>
+            <p class="hint">Right-drag windows &middot; Ctrl+wheel zooms &middot; Shift-drag or middle-drag pans</p>
+          </div>
+        </header>
+
+        <div id="status" class="status" role="status">Loading manifest...</div>
+        <div id="review-flags" class="review-flags" hidden></div>
+
+        <section class="review-bar" aria-label="Case review">
+          <div class="score-group" role="group" aria-label="Case score">
+            <span class="review-label">Score</span>
+            <div class="score-buttons">
+              <button type="button" class="score-button" data-score="1">1</button>
+              <button type="button" class="score-button" data-score="2">2</button>
+              <button type="button" class="score-button" data-score="3">3</button>
+              <button type="button" class="score-button" data-score="4">4</button>
+              <button type="button" class="score-button" data-score="5">5</button>
+            </div>
+            <button id="clear-score" type="button" class="clear-score">Clear</button>
+          </div>
+          <label class="note-field">
+            <span class="review-label">Note</span>
+            <textarea id="review-note" rows="1" placeholder="Optional note for this case..."></textarea>
+          </label>
+          <span id="review-status" class="review-save" aria-live="polite"></span>
+        </section>
+
+        <details id="patient-summary" class="patient-summary" hidden>
+          <summary>Patient studies and series</summary>
+          <div class="patient-body">
+            <div id="patient-totals" class="summary-stats"></div>
+            <div id="patient-studies" class="study-table-wrap"></div>
+          </div>
+        </details>
+
+        <section class="viewer-grid" aria-label="Paired CT volumes">
+          <article class="study-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Prior study</p>
+                <h3 id="prior-date">-</h3>
+              </div>
+              <span id="prior-series" class="series-chip"></span>
+            </div>
+            <div class="canvas-wrap">
+              <canvas id="prior-canvas" tabindex="0"></canvas>
+              <span id="prior-window" class="window-readout"></span>
+              <span id="prior-zoom" class="zoom-readout" hidden></span>
+              <span id="prior-slice" class="slice-readout"></span>
+            </div>
+            <div id="prior-metadata" class="metadata"></div>
+          </article>
+
+          <article class="study-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Later study</p>
+                <h3 id="later-date">-</h3>
+              </div>
+              <span id="later-series" class="series-chip"></span>
+            </div>
+            <div class="canvas-wrap">
+              <canvas id="later-canvas" tabindex="0"></canvas>
+              <span id="later-window" class="window-readout"></span>
+              <span id="later-zoom" class="zoom-readout" hidden></span>
+              <span id="later-slice" class="slice-readout"></span>
+            </div>
+            <div id="later-metadata" class="metadata"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

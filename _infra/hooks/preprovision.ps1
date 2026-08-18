@@ -10,5 +10,5 @@ foreach ($command in @('az', 'helm', 'kubectl')) {
 	}
 }
 
-Write-Host "Radiology workflow location: $preferredLocation"
+Write-Host "SegMed ICH review location: $preferredLocation"
 azd env set AZURE_LOCATION $preferredLocation | Out-Null

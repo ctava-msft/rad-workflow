@@ -76,7 +76,8 @@ replace_value __FRONTEND_HOST__ "$frontend_host"
 replace_value __FRONTEND_URL__ "$frontend_url"
 
 kubectl apply -f "$rendered_manifest"
+kubectl rollout restart deployment/backend deployment/frontend --namespace radiology
 kubectl rollout status deployment/backend --namespace radiology --timeout 10m
 kubectl rollout status deployment/frontend --namespace radiology --timeout 10m
 
-printf 'Radiology workflow deployed: %s\n' "$frontend_url"
+printf 'SegMed ICH review deployed: %s\n' "$frontend_url"

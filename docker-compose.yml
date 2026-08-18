@@ -10,7 +10,7 @@ services:
       CASE_STORE: sqlite
       DEVELOPMENT_MODE: "true"
       DEVELOPMENT_USER: Local Clinician
-      SQLITE_PATH: /data/radiology.db
+      SQLITE_PATH: /data/reviews.db
     ports:
       - "8000:5000"
     volumes:
