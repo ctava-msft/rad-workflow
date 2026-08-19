@@ -78,6 +78,8 @@ const elements = {
   laterWindow: document.querySelector("#later-window"),
   priorZoom: document.querySelector("#prior-zoom"),
   laterZoom: document.querySelector("#later-zoom"),
+  priorError: document.querySelector("#prior-error"),
+  laterError: document.querySelector("#later-error"),
   resetView: document.querySelector("#reset-view"),
   patientSummary: document.querySelector("#patient-summary"),
   patientTotals: document.querySelector("#patient-totals"),
@@ -272,14 +274,19 @@ function applyWindow(viewer, window = state.window) {
   viewer.updateGLVolume();
 }
 
-async function loadVolume(viewer, caseId, phase, study) {
+async function loadVolume(viewer, caseId, phase, study, errorElement) {
   clearVolumes(viewer);
+  errorElement.hidden = true;
+  errorElement.textContent = "";
   const response = await apiFetch(`/volumes/${encodeURIComponent(caseId)}/${phase}`, {
     cache: "force-cache",
   });
   if (!response.ok) {
     const detail = await response.json().catch(() => ({}));
-    throw new Error(detail.detail || detail.error || `HTTP ${response.status}`);
+    const message = detail.detail || detail.error || `HTTP ${response.status}`;
+    errorElement.textContent = message;
+    errorElement.hidden = false;
+    throw new Error(message);
   }
   const volumeUrl = URL.createObjectURL(await response.blob());
   try {
@@ -988,10 +995,12 @@ async function loadCase(caseId) {
 
   elements.status.hidden = false;
   elements.status.textContent = "Loading paired NIfTI volumes...";
+  elements.priorError.hidden = true;
+  elements.laterError.hidden = true;
   try {
     await Promise.all([
-      loadVolume(priorViewer, candidate.id, "prior", candidate.prior),
-      loadVolume(laterViewer, candidate.id, "later", candidate.later),
+      loadVolume(priorViewer, candidate.id, "prior", candidate.prior, elements.priorError),
+      loadVolume(laterViewer, candidate.id, "later", candidate.later, elements.laterError),
     ]);
     if (token !== state.loadToken) {
       return;
