@@ -87,7 +87,8 @@ try {
   Invoke-Checked 'helm' @(
     'upgrade', '--install', 'cert-manager', 'jetstack/cert-manager',
     '--namespace', 'cert-manager', '--create-namespace',
-    '--set', 'crds.enabled=true', '--wait', '--timeout', '10m'
+    '--set', 'crds.enabled=true', '--force-conflicts',
+    '--wait', '--timeout', '10m'
   )
 
   $manifest = Get-Content 'k8s/app.yaml' -Raw

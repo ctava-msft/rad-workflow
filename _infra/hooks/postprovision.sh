@@ -53,7 +53,7 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
   --wait --timeout 10m
 helm upgrade --install cert-manager jetstack/cert-manager \
   --namespace cert-manager --create-namespace \
-  --set crds.enabled=true --wait --timeout 10m
+  --set crds.enabled=true --force-conflicts --wait --timeout 10m
 
 cp k8s/app.yaml "$rendered_manifest"
 replace_value() {
